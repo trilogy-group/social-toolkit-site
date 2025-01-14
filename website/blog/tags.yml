@@ -1,0 +1,9 @@
+social-toolkit:
+  label: Social Toolkit
+  permalink: /social-toolkit
+  description: Posts about Social Toolkit platform
+
+announcement:
+  label: Announcement
+  permalink: /announcement
+  description: Important announcements and updates

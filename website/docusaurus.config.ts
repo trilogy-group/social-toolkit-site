@@ -13,7 +13,7 @@ const config: Config = {
   url: 'https://trilogy-group.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/social-toolkit/',
+  baseUrl: '/social-toolkit-site/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -38,13 +38,13 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           editUrl:
-            'https://github.com/trilogy-group/social-toolkit/tree/main/website/',
+            'https://github.com/trilogy-group/social-toolkit-site/tree/main/website/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/trilogy-group/social-toolkit/tree/main/website/',
+            'https://github.com/trilogy-group/social-toolkit-site/tree/main/website/',
           blogSidebarTitle: 'All posts',
           blogSidebarCount: 'ALL',
         },

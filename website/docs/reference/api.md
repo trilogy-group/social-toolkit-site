@@ -55,7 +55,7 @@ The vector store automatically indexes all source content analysis, making it av
 
 ## Model Context Protocol (MCP)
 
-All API endpoints described below are also available as [MCP](https://github.com/trilogy-group/social-toolkit/tree/main/mcp) operations. MCP ([Model Context Protocol](https://modelcontextprotocol.io/introduction)) is a standardized way to interact with AI models and manage their context. Using MCP allows for better interoperability and standardization across different AI services.
+All API endpoints described below are also available as [MCP](https://github.com/trilogy-group/social-toolkit-site/tree/main/mcp) operations. MCP ([Model Context Protocol](https://modelcontextprotocol.io/introduction)) is a standardized way to interact with AI models and manage their context. Using MCP allows for better interoperability and standardization across different AI services.
 
 **Note:** Currently MCP only supports local connections, so it doesn't support remote use of these tools.
 
@@ -82,7 +82,7 @@ tenant = session.call_tool("create_tenant", {
 })
 ```
 
-[Example Client](https://github.com/trilogy-group/social-toolkit/tree/main/mcp/client.py)
+[Example Client](https://github.com/trilogy-group/social-toolkit-site/tree/main/mcp/client.py)
 
 ### Setting up MCP
 

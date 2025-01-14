@@ -6,6 +6,29 @@ sidebar_position: 4
 
 This document provides detailed information about the Brand Memory API endpoints.
 
+## Authorization
+
+The API uses two types of authorization:
+
+1. **Public Endpoints** - No authorization required
+   - Creating a tenant (`POST /tenant`)
+
+2. **Admin Endpoints** - Requires admin authorization
+   - Listing all tenants (`GET /tenant`)
+   - Contact vinayak.sachdeva@codenation.co.in for admin access
+
+3. **Tenant-Specific Endpoints** - Requires tenant API key
+   - All other endpoints
+   - Use the API key received during tenant creation as a Bearer token
+
+### Using the API Key
+
+For all tenant-specific endpoints, include the API key in the Authorization header:
+
+```http
+Authorization: Bearer <your-tenant-api-key>
+```
+
 ## Base URL
 
 All API endpoints are available at:
@@ -15,13 +38,15 @@ https://social-toolkit.ti.trilogy.com/
 
 ## Vector Store
 
-Brand Memory uses OpenSearch as its vector store database to store and manage analyzed source content. The vector store is essential for:
+Brand Memory uses vector storage to store and manage analyzed source content. By default, it uses an internal vector store, but you can optionally configure OpenSearch as your vector store backend.
+
+The vector store is essential for:
 - Storing embeddings of analyzed content
 - Enabling semantic search capabilities
 - Structuring brand-related information for quick retrieval
 - Supporting natural language querying of brand content
 
-Currently, only OpenSearch is supported as the vector store backend. When creating a tenant, you must provide OpenSearch configuration details:
+When creating a tenant, you can optionally provide OpenSearch configuration details:
 
 ```http
 POST /tenant
@@ -51,7 +76,7 @@ Content-Type: application/json
 }
 ```
 
-The vector store automatically indexes all source content analysis, making it available for semantic querying and retrieval through your application.
+If OpenSearch configuration is not provided, the system will automatically use the default internal vector store.
 
 ## Model Context Protocol (MCP)
 
@@ -101,6 +126,7 @@ To use the MCP client:
 ## Tenant Management
 
 ### Create Tenant
+This is a public endpoint that doesn't require authorization.
 
 ```http
 POST /tenant
@@ -130,45 +156,75 @@ Content-Type: application/json
 }
 ```
 
-### Get Tenant
-
-```http
-GET /tenant/{tenant_id}
-```
-
-### List Tenants
-
-```http
-GET /tenant
-```
-
-### Update Tenant
-
-```http
-PUT /tenant/{tenant_id}
-Content-Type: application/json
-
+Response:
+```json
 {
-    "name": "Updated Name",
-    "description": "Updated description",
+    "tenant_id": "t-123456",
+    "api_key": "sk-tenant-abcdef123456",
+    "name": "Your Company or Application",
+    "description": "Your company or application description",
     "settings": {
-        // Updated settings
-    }
+        "vector_store_type": "opensearch",
+        "vector_store_config": {
+            "host": "your-opensearch-host",
+            "port": 443,
+            "region": "us-east-1",
+            "index_name": "your-index"
+        },
+        "anthropic_api_key": "your-anthropic-key",
+        "openai_api_key": "your-openai-key",
+        "google_ai_api_key": "your-google-ai-key"
+    },
+    "concurrency_limits": {
+        "TEXT": 10,
+        "IMAGE": 5,
+        "VIDEO": 3,
+        "AUDIO": 3
+    },
 }
 ```
 
+### Get Tenant
+Requires tenant authorization.
+
+```http
+GET /tenant/{tenant_id}
+Authorization: Bearer <tenant-api-key>
+```
+
+### List Tenants
+Requires admin authorization. Contact vinayak.sachdeva@codenation.co.in for admin access.
+
+```http
+GET /tenant
+Authorization: Bearer <admin-api-key>
+```
+
+### Update Tenant
+Requires tenant authorization.
+
+```http
+PUT /tenant/{tenant_id}
+Authorization: Bearer <tenant-api-key>
+Content-Type: application/json
+```
+
 ### Delete Tenant
+Requires tenant authorization.
 
 ```http
 DELETE /tenant/{tenant_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ## Brand Management
 
 ### Create Brand
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/brand
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -181,21 +237,27 @@ Content-Type: application/json
 ```
 
 ### Get Brand
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### List Brands
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### Update Brand
+Requires tenant authorization.
 
 ```http
 PUT /tenant/{tenant_id}/brand/{brand_id}
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -208,21 +270,27 @@ Content-Type: application/json
 ```
 
 ### Delete Brand
+Requires tenant authorization.
 
 ```http
 DELETE /tenant/{tenant_id}/brand/{brand_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### Trigger Brand Compass
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/brand/{brand_id}/compass/trigger
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### Get Brand Compass
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/compass
+Authorization: Bearer <tenant-api-key>
 ```
 
 Response:
@@ -243,9 +311,11 @@ Response:
 ## Source Management
 
 ### Add Source
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/brand/{brand_id}/source
+Authorization: Bearer <tenant-api-key>
 Content-Type: multipart/form-data
 
 {
@@ -262,15 +332,19 @@ Content-Type: multipart/form-data
 ```
 
 ### Get Source
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/source/{source_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### List Sources
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/source
+Authorization: Bearer <tenant-api-key>
 ```
 
 Query parameters:
@@ -278,23 +352,29 @@ Query parameters:
 - `status`: Filter by status
 
 ### Delete Source
+Requires tenant authorization.
 
 ```http
 DELETE /tenant/{tenant_id}/brand/{brand_id}/source/{source_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### Reprocess Source
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/brand/{brand_id}/source/{source_id}/reprocess
+Authorization: Bearer <tenant-api-key>
 ```
 
 ## Prompt Management
 
 ### Create Prompt
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/prompt
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -309,24 +389,30 @@ Content-Type: application/json
 ```
 
 ### Get Prompt
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/prompt/{prompt_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### List Prompts
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/prompt
+Authorization: Bearer <tenant-api-key>
 ```
 
 Query parameters:
 - `content_type`: Filter by content type
 
 ### Update Prompt
+Requires tenant authorization.
 
 ```http
 PUT /tenant/{tenant_id}/prompt/{prompt_id}
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -337,17 +423,21 @@ Content-Type: application/json
 ```
 
 ### Delete Prompt
+Requires tenant authorization.
 
 ```http
 DELETE /tenant/{tenant_id}/prompt/{prompt_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ## Worker Management
 
 ### Create Worker
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/worker
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -359,24 +449,30 @@ Content-Type: application/json
 ```
 
 ### Get Worker
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/worker/{worker_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### List Workers
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/worker
+Authorization: Bearer <tenant-api-key>
 ```
 
 Query parameters:
 - `output_type`: Filter by output type
 
 ### Update Worker
+Requires tenant authorization.
 
 ```http
 PUT /tenant/{tenant_id}/worker/{worker_id}
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -387,17 +483,21 @@ Content-Type: application/json
 ```
 
 ### Delete Worker
+Requires tenant authorization.
 
 ```http
 DELETE /tenant/{tenant_id}/worker/{worker_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ## Generation Management
 
 ### Create Generation
+Requires tenant authorization.
 
 ```http
 POST /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation
+Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
@@ -406,13 +506,58 @@ Content-Type: application/json
 ```
 
 ### Get Generation
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}
+Authorization: Bearer <tenant-api-key>
 ```
 
 ### List Generations
+Requires tenant authorization.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation
+Authorization: Bearer <tenant-api-key>
 ```
+
+## API Configuration
+
+Brand Memory uses different AI providers for specific tasks:
+
+### Model Usage
+
+- **Text Analysis & Generation**: Uses Anthropic's Claude 3.5 Sonnet model (`claude-3-5-sonnet-20241022`)
+  - Handles all text-based operations
+  - Requires Anthropic API key
+
+- **Text Embeddings**: Uses OpenAI's embedding model (`text-embedding-3-large`)
+  - Creates vector representations of text content
+  - Used for semantic search and content organization
+  - Requires OpenAI API key
+
+- **Multi-modal Content**: Uses Google's Gemini model (`gemini-1.5-pro-001`)
+  - Processes images, audio, and video content
+  - Handles analysis of non-text media
+  - Requires Google AI API key
+
+### Concurrency Management
+
+Each tenant can optionally configure concurrency limits per content type. If not specified, the system will use default values:
+
+```json
+"concurrency_limits": {
+    "TEXT": 10,    // Maximum parallel text operations
+    "IMAGE": 5,    // Maximum parallel image operations
+    "VIDEO": 3,    // Maximum parallel video operations
+    "AUDIO": 3     // Maximum parallel audio operations
+}
+```
+
+These limits help:
+- Manage API rate limits across providers
+- Control resource utilization
+- Ensure stable system performance
+- Prevent overloading of processing queues
+
+If not specified, the system will use default concurrency values that are suitable for most use cases.

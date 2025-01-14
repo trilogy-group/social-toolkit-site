@@ -11,11 +11,12 @@ This guide will help you get started with Social Toolkit. We'll walk through the
 Before you begin, you'll need:
 
 1. **API Keys**:
-   - Anthropic API key (for Claude)
-   - OpenAI API key (for embeddings)
-   - Google AI API key (for Gemini)
+   - **Anthropic API key**: Used for all text-based operations (analysis and generation) using the Claude 3.5 Sonnet model
+   - **OpenAI API key**: Used for creating text embeddings with text-embedding-3-large model
+   - **Google AI API key**: Used for analysing and generating non-text content (images, audio, video) using Gemini 1.5 Pro
 
-2. **OpenSearch Instance**:
+2. **OpenSearch Instance (Optional)**:
+   If you want to use your own OpenSearch instance instead of the default SDK's vector store:
    - Host URL
    - Port
    - Region
@@ -23,8 +24,9 @@ Before you begin, you'll need:
 
 ## Step 1: Create Your Tenant
 
-Your first step is to create a tenant. A tenant represents your organization or application and contains all your brands and configurations.
+Your first step is to create a tenant. A tenant represents your organization or application and contains all your brands and configurations. This is a public endpoint that doesn't require authorization.
 
+Basic configuration:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant
 Content-Type: application/json
@@ -33,13 +35,6 @@ Content-Type: application/json
     "name": "Your application name",
     "description": "Your application description",
     "settings": {
-        "vector_store_type": "opensearch",
-        "vector_store_config": {
-            "host": "your-opensearch-host",
-            "port": 443,
-            "region": "us-east-1",
-            "index_name": "your-index"
-        },
         "anthropic_api_key": "your-anthropic-key",
         "openai_api_key": "your-openai-key",
         "google_ai_api_key": "your-google-ai-key"
@@ -47,7 +42,24 @@ Content-Type: application/json
 }
 ```
 
-Save the `tenant_id` from the response for future use.
+The response will include your tenant ID and API key:
+```json
+{
+    "tenant_id": "t-123456",
+    "api_key": "sk-tenant-abcdef123456",
+    // ... other response fields ...
+}
+```
+
+Save both the `tenant_id` and `api_key` - you'll need them for all subsequent requests.
+
+## Authentication for Subsequent Requests
+
+For all following API calls, you must include your tenant API key in the Authorization header:
+
+```http
+Authorization: Bearer sk-tenant-abcdef123456
+```
 
 ## Step 2: Create Analysis Prompts
 
@@ -55,6 +67,7 @@ Analysis prompts are configured at the tenant level and define how content will 
 
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/prompt
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -71,6 +84,7 @@ Generation workers are also configured at the tenant level. They are specialized
 
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -87,6 +101,7 @@ Next, create a brand under your tenant. A brand will use your tenant's prompts a
 
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -107,6 +122,7 @@ Add examples of your brand's content:
 
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -124,6 +140,7 @@ Add factual information about your brand:
 
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -140,6 +157,7 @@ Add your brand rules and standards:
 
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -157,6 +175,7 @@ The content analysis process is asynchronous:
 1. Submit content for analysis:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
+Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
@@ -173,29 +192,5 @@ The response will include a `source_id` that you'll need for checking the analys
 2. Poll for analysis results:
 ```http
 GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}
+Authorization: Bearer <your-tenant-api-key>
 ```
-
-The response will include a `status` field. Continue polling until the status is `COMPLETED` or `FAILED`. Typical analysis time is 15-180 seconds and can very based on content type.
-
-## Step 7: Generate Content
-
-Content generation is also an asynchronous process:
-
-1. Submit generation request:
-```http
-POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation
-Content-Type: application/json
-
-{
-    "context": "Create a post about our new feature"
-}
-```
-
-The response will include a `generation_id` that you'll need for checking the generation status.
-
-2. Poll for generation results:
-```http
-GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}
-```
-
-The response will include a `status` field. Continue polling until the status is `COMPLETED` or `FAILED`. Typical generation time is 15-60 seconds depending on the content type.

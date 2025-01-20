@@ -78,24 +78,101 @@ Content-Type: application/json
 }
 ```
 
-## Step 3: Create Generation Workers
+## Step 3: Set Up Brand Compass Workers
 
-Generation workers are also configured at the tenant level. They are specialized prompts for creating different types of content:
+Before creating your brand, you'll need to set up specialized workers for the Brand Compass analysis. These workers will analyze different aspects of your brand content, for example:
 
+1. **Create Voice Analysis Worker**:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
-    "name": "Social Post Generator",
-    "description": "Generate social media posts",
+    "name": "Voice Analysis",
+    "description": "Analyzes brand voice characteristics",
     "output_type": "TEXT",
-    "prompt": "Create a social media post that matches our brand voice and style. Use our guidelines for tone and messaging."
+    "prompt": "Analyze the content for voice characteristics including tone, style, and personality. Consider formality, emotion, and distinctive patterns."
 }
 ```
 
-## Step 4: Create Your Brand
+2. **Create Style Pattern Worker**:
+```http
+POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
+Authorization: Bearer <your-tenant-api-key>
+Content-Type: application/json
+
+{
+    "name": "Style Pattern Analysis",
+    "description": "Identifies consistent style patterns",
+    "output_type": "TEXT",
+    "prompt": "Identify recurring style patterns in the content including word choice, sentence structure, and formatting conventions."
+}
+```
+
+3. **Create Messaging Analysis Worker**:
+```http
+POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
+Authorization: Bearer <your-tenant-api-key>
+Content-Type: application/json
+
+{
+    "name": "Messaging Analysis",
+    "description": "Analyzes key messages and themes",
+    "output_type": "TEXT",
+    "prompt": "Identify core messages, themes, and value propositions present in the content."
+}
+```
+
+**Update Tenant with Brand Compass Workers**:
+```http
+PUT https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}
+Authorization: Bearer <your-tenant-api-key>
+Content-Type: application/json
+
+{
+    "brand_compass_worker_ids": [
+        "worker-id-1",
+        "worker-id-2",
+        "worker-id-3"
+    ]
+}
+```
+
+## Step 4: Create Generation Workers
+
+After setting up Brand Compass workers, create workers for content generation. The system supports two types of workers:
+
+1. **Text Workers** - Generate text-based content:
+```http
+POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
+Authorization: Bearer <your-tenant-api-key>
+Content-Type: application/json
+
+{
+    "name": "Blog Post Generator",
+    "description": "Generates blog post content",
+    "type": "TEXT",
+    "output_type": "TEXT",
+    "prompt": "Create a blog post that aligns with our brand guidelines, maintaining our established voice and expertise level."
+}
+```
+
+2. **Multi-Modal Workers** - Generate text and image content (coming soon):
+```http
+POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
+Authorization: Bearer <your-tenant-api-key>
+Content-Type: application/json
+
+{
+    "name": "Social Image Generator",
+    "description": "Generates social media images",
+    "output_type": "MULTI_MODAL",
+    "prompt": "Create an engaging social media image that reflects our brand style and visual identity."
+}
+```
+
+## Step 5: Create Your Brand
 
 Next, create a brand under your tenant. A brand will use your tenant's prompts and workers to analyze and generate content specific to that brand.
 
@@ -112,7 +189,7 @@ Content-Type: application/json
 
 Save the `brand_id` from the response.
 
-## Step 5: Add Brand Content
+## Step 6: Add Brand Content
 
 Brand Memory uses three types of sources to understand and generate content for your brand:
 
@@ -168,7 +245,7 @@ Content-Type: application/json
 }
 ```
 
-## Step 6: Analyze Content
+## Step 7: Analyze Content
 
 The content analysis process is asynchronous:
 
@@ -192,5 +269,75 @@ The response will include a `source_id` that you'll need for checking the analys
 2. Poll for analysis results:
 ```http
 GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}
+Authorization: Bearer <your-tenant-api-key>
+```
+
+## Step 8: Run Brand Compass Analysis
+
+After adding your brand content, trigger the Brand Compass analysis to get a comprehensive understanding of your brand:
+
+1. **Trigger the Analysis**:
+```http
+POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/compass/trigger
+Authorization: Bearer <your-tenant-api-key>
+```
+
+2. **Monitor Progress**:
+```http
+GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/compass
+Authorization: Bearer <your-tenant-api-key>
+```
+
+The response will show the analysis progress:
+```json
+{
+    "status": "PROCESSING",
+    "generations": [
+        {
+            "worker_id": "worker-tone-analysis-123",
+            "status": "COMPLETED",
+            "result": {
+                "tone_characteristics": [...],
+                "voice_patterns": [...],
+            }
+        },
+        {
+            "worker_id": "worker-style-patterns-456",
+            "status": "PROCESSING"
+        }
+    ],
+    "triggered_at": "2024-01-08T12:00:00Z",
+    "completed_at": null,
+    "progress": {
+        "total_workers": 5,
+        "completed_workers": 2,
+        "percent_complete": 40
+    }
+}
+```
+
+Once completed, the Brand Compass will provide insights about your brand's:
+- Voice and tone characteristics
+- Style patterns and conventions
+- Key messages and themes
+- Content consistency
+- Areas for improvement
+
+## Step 9: Generate Content
+
+1. Submit a generation request:
+```http
+POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation
+Authorization: Bearer <your-tenant-api-key>
+Content-Type: application/json
+
+{
+    "context": "Optional context for the generation"
+}
+```
+
+2. Check generation status:
+```http
+GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}
 Authorization: Bearer <your-tenant-api-key>
 ```

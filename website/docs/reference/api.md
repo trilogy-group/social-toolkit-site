@@ -80,48 +80,64 @@ If OpenSearch configuration is not provided, the system will automatically use t
 
 ## Model Context Protocol (MCP)
 
-All API endpoints described below are also available as [MCP](https://github.com/trilogy-group/social-toolkit-site/tree/main/mcp) operations. MCP ([Model Context Protocol](https://modelcontextprotocol.io/introduction)) is a standardized way to interact with AI models and manage their context. Using MCP allows for better interoperability and standardization across different AI services.
+All API endpoints described below are also available as MCP tools. MCP ([Model Context Protocol](https://modelcontextprotocol.io/introduction)) is a standardized way to interact with AI models and manage their context. Using MCP allows for better interoperability and standardization across different AI services.
+
+For detailed MCP documentation, see [mcp/README.md](https://github.com/trilogy-group/social-toolkit-site/blob/main/mcp/README.md).
 
 **Note:** Currently MCP only supports local connections, so it doesn't support remote use of these tools.
 
-### Benefits of MCP
-
-- **Standardized Interactions**: MCP provides a consistent interface for working with different AI models and services
-- **Context Management**: Better handling of context windows and model memory
-- **Interoperability**: Seamlessly switch between different AI providers while maintaining the same interface
-- **Enhanced Control**: Fine-grained control over model parameters and context handling
-
-### MCP Operations
-
-All API endpoints can be accessed through MCP operations. For example:
-
-```python
-# Creating a tenant via MCP
-tenant = session.call_tool("create_tenant", {
-    "name": "Social Savvy",
-    "description": "AI Podcast Studio",
-    "settings": {
-        "vector_store_type": "opensearch",
-        # ... other settings ...
-    }
-})
-```
-
-[Example Client](https://github.com/trilogy-group/social-toolkit-site/tree/main/mcp/client.py)
-
 ### Setting up MCP
 
-To use the MCP client:
+Clone the [repo](https://github.com/trilogy-group/social-toolkit-site) and follow this setup
 
-1. Run the setup script:
+#### Docker Setup
+Build the MCP Docker image:
+```bash
+cd mcp && docker build -t social-toolkit/mcp .
+```
+
+#### Using the Inspector
+You can use the MCP Inspector for debugging:
+```bash
+./inspector.sh
+```
+
+#### Integration with Claude Desktop
+
+Add the following to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "social-toolkit": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "social-toolkit/mcp"
+      ]
+    }
+  }
+}
+```
+
+Now you can use the added mcp tools from server.py in claude desktop
+
+### MCP Client Sample (Without Claude Desktop)
+To try out the Social Toolkit using natural language locally:
+
+1. Setup:
 ```bash
 ./setup.sh
 ```
 
-2. Start the MCP client:
+2. Run:
 ```bash
 ./run.sh
 ```
+
+This will run both MCP server and client, connected to each other. The terminal will prompt for natural language queries from the user, which then will be translated into MCP tool calls to answer the user query.
 
 ## Tenant Management
 
@@ -311,23 +327,46 @@ Response:
 ## Source Management
 
 ### Add Source
-Requires tenant authorization.
+Requires tenant authorization. Accepts multipart/form-data requests.
 
 ```http
 POST /tenant/{tenant_id}/brand/{brand_id}/source
 Authorization: Bearer <tenant-api-key>
 Content-Type: multipart/form-data
 
+# Form Fields:
+name: "Sample Content"
+description: "Content description"
+source_type: "SAMPLE" # SAMPLE, GUIDELINES, or KNOWLEDGE
+
+# Content can be provided in one of these three ways:
+1. file: <file upload>
+2. url: "https://example.com/content"
+3. text: "Direct text content..."
+```
+
+Important notes:
+- Only SAMPLE source type supports non-text content (IMAGE, AUDIO, VIDEO)
+- GUIDELINES and KNOWLEDGE sources must be TEXT content type
+- Content type is automatically detected from the uploaded file or URL
+- If no content is provided, the request will be rejected
+- For text content:
+  - Uploaded files should have text/* content type
+  - URL should return text/* content type
+  - Direct text input is always treated as TEXT content type
+
+Response (201 Created):
+```json
 {
+    "source_id": "src-123456",
     "name": "Sample Content",
     "description": "Content description",
-    "source_type": "SAMPLE", // SAMPLE, GUIDELINES, or KNOWLEDGE
-    "content_type": "TEXT", // TEXT, IMAGE, AUDIO, or VIDEO
-    "file": <file-data>
-    // OR
-    "url": "https://example.com/content",
-    // OR
-    "text": "Direct text content..."
+    "source_type": "SAMPLE",
+    "content_type": "TEXT", // Automatically detected: TEXT, IMAGE, AUDIO, or VIDEO
+    "status": "PROCESSING", // or "COMPLETED" if no analysis prompts exist
+    "created_at": "2024-01-08T12:00:00Z",
+    "updated_at": "2024-01-08T12:00:00Z",
+    "location": "s3://bucket-name/sources/tenant=123/brand=456/uuid_filename"
 }
 ```
 
@@ -443,10 +482,14 @@ Content-Type: application/json
 {
     "name": "Social Media Generator",
     "description": "Generate social media posts",
-    "output_type": "TEXT",
+    "output_type": "TEXT",           // TEXT or MULTI_MODAL (multi modal coming soon)
     "prompt": "Create a social media post that matches our brand voice"
 }
 ```
+
+Important notes:
+- TEXT workers use Claude 3.5 Sonnet and can only generate text content
+- MULTI_MODAL workers use Gemini 1.5 Pro and can generate images and text content
 
 ### Get Worker
 Requires tenant authorization.
@@ -561,3 +604,90 @@ These limits help:
 - Prevent overloading of processing queues
 
 If not specified, the system will use default concurrency values that are suitable for most use cases.
+
+## Brand Compass
+
+The Brand Compass is a comprehensive brand analysis report that provides a holistic understanding of your brand by analyzing all brand-related content. It uses specialized workers to analyze different aspects of your brand content and synthesize the findings.
+
+### Brand Compass Workers
+
+Brand Compass workers are specialized analysis workers that need to be created and configured for your tenant. These workers analyze different aspects of your brand:
+
+1. First, create the necessary workers using the worker endpoints
+2. Then, associate these workers with your tenant by updating the `brand_compass_worker_ids` field
+
+Example worker configuration:
+```json
+{
+    "brand_compass_worker_ids": [
+        "worker-tone-analysis-123",
+        "worker-style-patterns-456",
+        "worker-messaging-789"
+    ]
+}
+```
+
+### Brand Compass Status
+
+The Brand Compass process has several states:
+- `NOT_STARTED`: Initial state
+- `PROCESSING`: Analysis in progress
+- `COMPLETED`: Analysis finished successfully
+- `FAILED`: Analysis encountered an error
+
+### Trigger Brand Compass Analysis
+
+Initiates a new Brand Compass analysis:
+
+```http
+POST /tenant/{tenant_id}/brand/{brand_id}/compass/trigger
+Authorization: Bearer <tenant-api-key>
+```
+
+Response:
+```json
+{
+    "status": "PROCESSING",
+    "triggered_at": "2024-01-08T12:00:00Z"
+}
+```
+
+### Get Brand Compass Status
+
+Retrieve the current status and results of the Brand Compass analysis:
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/compass
+Authorization: Bearer <tenant-api-key>
+```
+
+Response:
+```json
+{
+    "status": "PROCESSING",
+    "generations": [
+        {
+            "worker_id": "worker-tone-analysis-123",
+            "status": "COMPLETED",
+            "result": {
+                "tone_characteristics": [...],
+                "voice_patterns": [...],
+                // ... analysis results
+            }
+        },
+        {
+            "worker_id": "worker-style-patterns-456",
+            "status": "PROCESSING"
+        }
+        // ... other worker generations
+    ],
+    "triggered_at": "2024-01-08T12:00:00Z",
+    "completed_at": null,
+    "progress": {
+        "total_workers": 5,
+        "completed_workers": 2,
+        "percent_complete": 40
+    }
+}
+```
+

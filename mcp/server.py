@@ -8,32 +8,11 @@ mcp = FastMCP("Demo")
 API_URL = "https://social-toolkit.ti.trilogy.com"
 
 @mcp.tool()
-def list_tenants() -> any:
-    """List Tenants"""
-    try:
-        response = requests.get(f"{API_URL}/tenant")
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        error_msg = "Failed to list tenants"
-        print(error_msg, e)
-        return error_msg
-
-@mcp.tool()
-def get_tenant(tenant_id: str) -> any:
-    """List Tenants"""
-    try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}")
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        error_msg = f"Failed to get tenant {tenant_id}"
-        print(error_msg, e)
-        return error_msg
-
-@mcp.tool()
 def create_tenant(name: str, description: str = None, settings: dict = None, concurrency_limits: dict = None) -> any:
-    """Create a new tenant with the specified parameters"""
+    """
+    Create a new tenant with the specified parameters (Public API)
+    Returns api_key in response which should be used as bearer token for subsequent requests
+    """
     try:
         payload = {
             "name": name,
@@ -45,134 +24,203 @@ def create_tenant(name: str, description: str = None, settings: dict = None, con
         response.raise_for_status()
         return response.json()
     except Exception as e:
-        error_msg = "Failed to create tenant"
-        print(error_msg, e)
-        return error_msg
+        print(f"Failed to create tenant: {e}")
+        return {"status": "error", "message": "Failed to create tenant", "error": str(e)}
 
 @mcp.tool()
-def update_tenant(tenant_id: str, updates: dict) -> any:
-    """Update an existing tenant's details"""
+def list_tenants(admin_token: str) -> any:
+    """
+    List Tenants (Admin API)
+    Requires admin bearer token
+    """
     try:
-        response = requests.put(f"{API_URL}/tenant/{tenant_id}", json=updates)
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        response = requests.get(f"{API_URL}/tenant", headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        error_msg = "Failed to list tenants"
+        print(f"{error_msg}: {e}")
+        return {"status": "error", "message": error_msg, "error": str(e)}
+
+@mcp.tool()
+def get_tenant(tenant_id: str, api_key: str) -> any:
+    """
+    Get Tenant details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
+    try:
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}", headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        error_msg = f"Failed to get tenant {tenant_id}"
+        print(f"{error_msg}: {e}")
+        return {"status": "error", "message": error_msg, "error": str(e)}
+
+@mcp.tool()
+def update_tenant(tenant_id: str, api_key: str, updates: dict) -> any:
+    """
+    Update an existing tenant's details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
+    try:
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.put(f"{API_URL}/tenant/{tenant_id}", json=updates, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to update tenant {tenant_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def delete_tenant(tenant_id: str) -> any:
-    """Delete a tenant"""
+def delete_tenant(tenant_id: str, api_key: str) -> any:
+    """
+    Delete a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.delete(f"{API_URL}/tenant/{tenant_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.delete(f"{API_URL}/tenant/{tenant_id}", headers=headers)
         response.raise_for_status()
         return {"status": "success", "message": f"Tenant {tenant_id} deleted"}
     except Exception as e:
         error_msg = f"Failed to delete tenant {tenant_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def create_brand(tenant_id: str, name: str, description: str = None, settings: dict = None) -> any:
-    """Create a new brand for a tenant"""
+def create_brand(tenant_id: str, api_key: str, name: str, description: str = None, settings: dict = None) -> any:
+    """
+    Create a new brand for a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         payload = {
             "name": name,
             "description": description,
             "settings": settings or {}
         }
-        response = requests.post(f"{API_URL}/tenant/{tenant_id}/brand", json=payload)
+        response = requests.post(f"{API_URL}/tenant/{tenant_id}/brand", json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to create brand for tenant {tenant_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def get_brand(tenant_id: str, brand_id: str) -> any:
-    """Get brand details"""
+def get_brand(tenant_id: str, api_key: str, brand_id: str) -> any:
+    """
+    Get brand details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to get brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def list_brands(tenant_id: str) -> any:
-    """List all active brands for a tenant"""
+def list_brands(tenant_id: str, api_key: str) -> any:
+    """
+    List all active brands for a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to list brands for tenant {tenant_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def update_brand(tenant_id: str, brand_id: str, updates: dict) -> any:
-    """Update brand details"""
+def update_brand(tenant_id: str, api_key: str, brand_id: str, updates: dict) -> any:
+    """
+    Update brand details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.put(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}", json=updates)
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.put(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}", json=updates, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to update brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def delete_brand(tenant_id: str, brand_id: str) -> any:
-    """Delete a brand"""
+def delete_brand(tenant_id: str, api_key: str, brand_id: str) -> any:
+    """
+    Delete a brand (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.delete(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.delete(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}", headers=headers)
         response.raise_for_status()
         return {"status": "success", "message": f"Brand {brand_id} deleted"}
     except Exception as e:
         error_msg = f"Failed to delete brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def trigger_brand_compass(tenant_id: str, brand_id: str) -> any:
-    """Trigger the generation of a brand compass"""
+def trigger_brand_compass(tenant_id: str, api_key: str, brand_id: str) -> any:
+    """
+    Trigger the generation of a brand compass (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.post(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/compass/trigger")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.post(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/compass/trigger", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to trigger brand compass for brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def get_brand_compass(tenant_id: str, brand_id: str) -> any:
-    """Get the latest brand compass"""
+def get_brand_compass(tenant_id: str, api_key: str, brand_id: str) -> any:
+    """
+    Get the latest brand compass (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/compass")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/compass", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to get brand compass for brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def create_source(tenant_id: str, brand_id: str, name: str, source_type: str, 
+def create_source(tenant_id: str, api_key: str, brand_id: str, name: str, source_type: str, 
                  content_type: str = None, description: str = None, 
                  file_path: str = None, url: str = None, text: str = None) -> any:
     """
-    Create a new source for a brand. Must provide one of: file_path, url, or text.
+    Create a new source for a brand (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    Must provide one of: file_path, url, or text.
     source_type must be one of: KNOWLEDGE, GUIDELINES, SAMPLE
     content_type must be one of: VIDEO, AUDIO, TEXT, IMAGE
     """
     try:
-        # Prepare the multipart form data
+        headers = {"Authorization": f"Bearer {api_key}"}
         files = {}
         data = {
             "name": name,
@@ -183,7 +231,6 @@ def create_source(tenant_id: str, brand_id: str, name: str, source_type: str,
         if content_type:
             data["content_type"] = content_type
             
-        # Handle different input types
         if file_path:
             with open(file_path, 'rb') as f:
                 files = {'file': f}
@@ -197,36 +244,43 @@ def create_source(tenant_id: str, brand_id: str, name: str, source_type: str,
         response = requests.post(
             f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source",
             data=data,
-            files=files
+            files=files,
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to create source for brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def get_source(tenant_id: str, brand_id: str, source_id: str) -> any:
-    """Get source details"""
+def get_source(tenant_id: str, api_key: str, brand_id: str, source_id: str) -> any:
+    """
+    Get source details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to get source {source_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def list_sources(tenant_id: str, brand_id: str, source_type: str = None, status: str = None) -> any:
+def list_sources(tenant_id: str, api_key: str, brand_id: str, source_type: str = None, status: str = None) -> any:
     """
-    List sources for a brand. 
+    List sources for a brand (Tenant-specific API)
+    Requires tenant api_key as bearer token
     Optional filters:
     - source_type: KNOWLEDGE, GUIDELINES, SAMPLE
     - status: QUEUED, PROCESSING, COMPLETED, FAILED
     """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         params = {}
         if source_type:
             params['source_type'] = source_type
@@ -235,47 +289,58 @@ def list_sources(tenant_id: str, brand_id: str, source_type: str = None, status:
             
         response = requests.get(
             f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source",
-            params=params
+            params=params,
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to list sources for brand {brand_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def delete_source(tenant_id: str, brand_id: str, source_id: str) -> any:
-    """Delete a source and its associated data"""
+def delete_source(tenant_id: str, api_key: str, brand_id: str, source_id: str) -> any:
+    """
+    Delete a source and its associated data (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.delete(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.delete(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}", headers=headers)
         response.raise_for_status()
         return {"status": "success", "message": f"Source {source_id} deleted"}
     except Exception as e:
         error_msg = f"Failed to delete source {source_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def reprocess_source(tenant_id: str, brand_id: str, source_id: str) -> any:
-    """Trigger reprocessing of a source"""
+def reprocess_source(tenant_id: str, api_key: str, brand_id: str, source_id: str) -> any:
+    """
+    Trigger reprocessing of a source (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.post(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}/reprocess")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.post(f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/source/{source_id}/reprocess", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to reprocess source {source_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def create_prompt(tenant_id: str, name: str, content_type: str, prompt_text: str, 
+def create_prompt(tenant_id: str, api_key: str, name: str, content_type: str, prompt_text: str, 
                  description: str = None, settings: dict = None) -> any:
     """
-    Create a new prompt for a tenant
+    Create a new prompt for a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
     content_type must be one of: VIDEO, AUDIO, TEXT, IMAGE
     """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         payload = {
             "name": name,
             "content_type": content_type,
@@ -283,196 +348,233 @@ def create_prompt(tenant_id: str, name: str, content_type: str, prompt_text: str
             "description": description,
             "settings": settings or {}
         }
-        response = requests.post(f"{API_URL}/tenant/{tenant_id}/prompt", json=payload)
+        response = requests.post(f"{API_URL}/tenant/{tenant_id}/prompt", json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = "Failed to create prompt"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def get_prompt(tenant_id: str, prompt_id: str) -> any:
-    """Get prompt details"""
+def get_prompt(tenant_id: str, api_key: str, prompt_id: str) -> any:
+    """
+    Get prompt details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/prompt/{prompt_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/prompt/{prompt_id}", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to get prompt {prompt_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def list_prompts(tenant_id: str, content_type: str = None) -> any:
+def list_prompts(tenant_id: str, api_key: str, content_type: str = None) -> any:
     """
-    List all active prompts for a tenant
+    List all active prompts for a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
     Optional filter:
     - content_type: VIDEO, AUDIO, TEXT, IMAGE
     """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         params = {}
         if content_type:
             params['content_type'] = content_type
             
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/prompt", params=params)
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/prompt", params=params, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to list prompts for tenant {tenant_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def update_prompt(tenant_id: str, prompt_id: str, updates: dict) -> any:
+def update_prompt(tenant_id: str, api_key: str, prompt_id: str, updates: dict) -> any:
     """
-    Update prompt details. Updates can include:
+    Update prompt details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    Updates can include:
     - name: str
     - description: str
     - prompt_text: str
     - settings: dict
     """
     try:
-        response = requests.put(f"{API_URL}/tenant/{tenant_id}/prompt/{prompt_id}", json=updates)
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.put(f"{API_URL}/tenant/{tenant_id}/prompt/{prompt_id}", json=updates, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to update prompt {prompt_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def delete_prompt(tenant_id: str, prompt_id: str) -> any:
-    """Delete a prompt"""
+def delete_prompt(tenant_id: str, api_key: str, prompt_id: str) -> any:
+    """
+    Delete a prompt (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.delete(f"{API_URL}/tenant/{tenant_id}/prompt/{prompt_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.delete(f"{API_URL}/tenant/{tenant_id}/prompt/{prompt_id}", headers=headers)
         response.raise_for_status()
         return {"status": "success", "message": f"Prompt {prompt_id} deleted"}
     except Exception as e:
         error_msg = f"Failed to delete prompt {prompt_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def create_worker(tenant_id: str, output_type: str, prompt: str, name: str, description: str = None) -> any:
+def create_worker(tenant_id: str, api_key: str, output_type: str, prompt: str, name: str, description: str = None) -> any:
     """
-    Create a new worker for a tenant
+    Create a new worker for a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
     output_type must be one of: TEXT
     """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         payload = {
             "output_type": output_type,
             "prompt": prompt,
             "name": name,
             "description": description
         }
-        response = requests.post(f"{API_URL}/tenant/{tenant_id}/worker", json=payload)
+        response = requests.post(f"{API_URL}/tenant/{tenant_id}/worker", json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = "Failed to create worker"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def get_worker(tenant_id: str, worker_id: str) -> any:
-    """Get worker details"""
+def get_worker(tenant_id: str, api_key: str, worker_id: str) -> any:
+    """
+    Get worker details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/worker/{worker_id}")
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/worker/{worker_id}", headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to get worker {worker_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def list_workers(tenant_id: str, output_type: str = None) -> any:
+def list_workers(tenant_id: str, api_key: str, output_type: str = None) -> any:
     """
-    List all workers for a tenant
+    List all workers for a tenant (Tenant-specific API)
+    Requires tenant api_key as bearer token
     Optional filter:
     - output_type: TEXT
     """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         params = {}
         if output_type:
             params['output_type'] = output_type
             
-        response = requests.get(f"{API_URL}/tenant/{tenant_id}/worker", params=params)
+        response = requests.get(f"{API_URL}/tenant/{tenant_id}/worker", params=params, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to list workers for tenant {tenant_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def update_worker(tenant_id: str, worker_id: str, updates: dict) -> any:
+def update_worker(tenant_id: str, api_key: str, worker_id: str, updates: dict) -> any:
     """
-    Update worker details. Updates can include:
+    Update worker details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    Updates can include:
     - prompt: str
     - name: str
     - description: str
     """
     try:
-        response = requests.put(f"{API_URL}/tenant/{tenant_id}/worker/{worker_id}", json=updates)
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.put(f"{API_URL}/tenant/{tenant_id}/worker/{worker_id}", json=updates, headers=headers)
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to update worker {worker_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def create_generation(tenant_id: str, brand_id: str, worker_id: str, context: str = None) -> any:
+def create_generation(tenant_id: str, api_key: str, brand_id: str, worker_id: str, context: str = None) -> any:
     """
-    Start a new generation process
+    Start a new generation process (Tenant-specific API)
+    Requires tenant api_key as bearer token
     Optional:
     - context: Additional context for the generation
     """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         payload = {}
         if context:
             payload['context'] = context
             
         response = requests.post(
             f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation",
-            json=payload
+            json=payload,
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = "Failed to create generation"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def get_generation(tenant_id: str, brand_id: str, worker_id: str, generation_id: str) -> any:
-    """Get generation details"""
+def get_generation(tenant_id: str, api_key: str, brand_id: str, worker_id: str, generation_id: str) -> any:
+    """
+    Get generation details (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         response = requests.get(
-            f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}"
+            f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}",
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to get generation {generation_id}"
         print(error_msg, e)
-        return error_msg
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def list_generations(tenant_id: str, brand_id: str, worker_id: str) -> any:
-    """List all generations for a brand and worker"""
+def list_generations(tenant_id: str, api_key: str, brand_id: str, worker_id: str) -> any:
+    """
+    List all generations for a brand and worker (Tenant-specific API)
+    Requires tenant api_key as bearer token
+    """
     try:
+        headers = {"Authorization": f"Bearer {api_key}"}
         response = requests.get(
-            f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation"
+            f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation",
+            headers=headers
         )
         response.raise_for_status()
         return response.json()
     except Exception as e:
         error_msg = f"Failed to list generations for worker {worker_id}"
-        print(error_msg, e)
-        return error_msg
+        print(f"{error_msg}: {e}")
+        return {"status": "error", "message": error_msg, "error": str(e)}
 
 if __name__ == "__main__":
     # Initialize and run the server

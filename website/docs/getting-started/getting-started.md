@@ -200,15 +200,22 @@ Add examples of your brand's content:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
 Authorization: Bearer <your-tenant-api-key>
-Content-Type: application/json
+Content-Type: multipart/form-data
 
-{
-    "name": "Blog Post Sample",
-    "description": "Example of our blog writing style",
-    "source_type": "SAMPLE",
-    "content_type": "TEXT",
-    "content": "Your sample content here..."
-}
+# Form Fields:
+name: "Blog Post Sample"
+description: "Example of our blog writing style"
+source_type: "SAMPLE"
+text: "Your sample content here..."
+```
+
+You can also upload files or provide URLs:
+```http
+# Using file upload
+file: <file upload>
+
+# Or using URL
+url: "https://example.com/content"
 ```
 
 ### 2. Brand Knowledge
@@ -218,14 +225,13 @@ Add factual information about your brand:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
 Authorization: Bearer <your-tenant-api-key>
-Content-Type: application/json
+Content-Type: multipart/form-data
 
-{
-    "name": "Company History",
-    "description": "Our company background",
-    "source_type": "KNOWLEDGE",
-    "content": "Company history and facts..."
-}
+# Form Fields:
+name: "Company History"
+description: "Our company background"
+source_type: "KNOWLEDGE"
+text: "Company history and facts..."
 ```
 
 ### 3. Brand Guidelines
@@ -235,14 +241,13 @@ Add your brand rules and standards:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
 Authorization: Bearer <your-tenant-api-key>
-Content-Type: application/json
+Content-Type: multipart/form-data
 
-{
-    "name": "Voice Guidelines",
-    "description": "Brand voice rules",
-    "source_type": "GUIDELINES",
-    "content": "Our brand voice guidelines..."
-}
+# Form Fields:
+name: "Voice Guidelines"
+description: "Brand voice rules"
+source_type: "GUIDELINES"
+text: "Our brand voice guidelines..."
 ```
 
 ## Step 7: Analyze Content
@@ -253,15 +258,13 @@ The content analysis process is asynchronous:
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/source
 Authorization: Bearer <your-tenant-api-key>
-Content-Type: application/json
+Content-Type: multipart/form-data
 
-{
-    "name": "Content Sample",
-    "description": "Content to analyze",
-    "source_type": "SAMPLE",
-    "content_type": "TEXT",
-    "content": "Content to analyze..."
-}
+# Form Fields:
+name: "Content Sample"
+description: "Content to analyze"
+source_type: "SAMPLE"
+text: "Content to analyze..."
 ```
 
 The response will include a `source_id` that you'll need for checking the analysis status.

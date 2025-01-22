@@ -544,7 +544,9 @@ Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
-    "context": "Optional context for generation"
+    "context": "Optional context for generation",
+    "source_ids": ["src-123", "src-456"],  // Optional: Array of source IDs to include in generation context
+    "use_source_context": true             // Optional: Whether to use source analysis (default: true)
 }
 ```
 

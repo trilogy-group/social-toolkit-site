@@ -335,9 +335,16 @@ Authorization: Bearer <your-tenant-api-key>
 Content-Type: application/json
 
 {
-    "context": "Optional context for the generation"
+    "context": "Optional context for the generation",
+    "source_ids": ["src-123", "src-456"],  // Optional: Specific sources to include in generation context
+    "use_source_context": true             // Optional: Whether to use source analysis (default: true)
 }
 ```
+
+The generation request accepts these parameters:
+- `context`: Optional context to guide the generation
+- `source_ids`: Optional array of source IDs that should be included in full during generation
+- `use_source_context`: Optional boolean (default: true) that determines whether to use source analysis for generation
 
 2. Check generation status:
 ```http

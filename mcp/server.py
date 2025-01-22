@@ -513,18 +513,25 @@ def update_worker(tenant_id: str, api_key: str, worker_id: str, updates: dict) -
         return {"status": "error", "message": error_msg, "error": str(e)}
 
 @mcp.tool()
-def create_generation(tenant_id: str, api_key: str, brand_id: str, worker_id: str, context: str = None) -> any:
+def create_generation(tenant_id: str, api_key: str, brand_id: str, worker_id: str, 
+                     context: str = None, source_ids: list = None, use_source_context: bool = True) -> any:
     """
     Start a new generation process (Tenant-specific API)
     Requires tenant api_key as bearer token
     Optional:
     - context: Additional context for the generation
+    - source_ids: Array of source IDs to include in full during generation
+    - use_source_context: Whether to use source analysis in generation (default: true)
     """
     try:
         headers = {"Authorization": f"Bearer {api_key}"}
         payload = {}
         if context:
             payload['context'] = context
+        if source_ids is not None:
+            payload['source_ids'] = source_ids
+        if use_source_context is not None:
+            payload['use_source_context'] = use_source_context
             
         response = requests.post(
             f"{API_URL}/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation",

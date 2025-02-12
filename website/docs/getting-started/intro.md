@@ -19,7 +19,7 @@ Social Toolkit is a powerful service designed to enable applications with sophis
 Below is a high-level overview of how Brand Memory works from start to finish:
 
 1. **Tenant Creation**  
-   Create a tenant, which represents your organization or application. Each tenant contains the brands and configurations you will use.
+   Create a tenant, which represents your organization or application. Each tenant contains the brands and configurations you will use. Tenants can be organized hierarchically using parent-child relationships, allowing you to create structured organization of your brands and content.
 
 2. **Brand Creation**  
    Set up a brand identity to unify all brand-specific content, guidelines, and knowledge.
@@ -28,7 +28,7 @@ Below is a high-level overview of how Brand Memory works from start to finish:
    Design prompts to analyze brand materials for voice, style, compliance, and other aspects.
 
 4. **Generation Setup**  
-   Create specialized instructions (called “workers”) that define how to generate content aligned with your brand. You can then run generation requests to produce brand-consistent outputs.
+   Create specialized instructions (called "workers") that define how to generate content aligned with your brand. You can then run generation requests to produce brand-consistent outputs.
 
 5. **Brand Compass**  
    A Brand Compass is a unified report that provides a holistic view of your brand by analyzing all brand-related content. It synthesizes information from your uploaded samples, knowledge, and guidelines to create a comprehensive brand understanding. The Brand Compass:

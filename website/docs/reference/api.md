@@ -151,6 +151,7 @@ Content-Type: application/json
 {
     "name": "Your Company or Application",
     "description": "Your company or application description",
+    "parent_tenant_id": "t-parent123",
     "settings": {
         "vector_store_type": "opensearch",
         "vector_store_config": {
@@ -168,17 +169,59 @@ Content-Type: application/json
         "IMAGE": 5,
         "VIDEO": 3,
         "AUDIO": 3
-    },
+    }
 }
 ```
 
-Response:
+#### Request Fields
+
+**Required Fields:**
+- `name` (string): The name of your tenant. This should be a human-readable identifier for your organization or application.
+- `description` (string): A brief description of your tenant's purpose or use case.
+
+**Optional Fields:**
+- `parent_tenant_id` (string): The ID of the parent tenant if this tenant is part of a hierarchical organization. Must be a valid tenant ID. The child tenant will have access to workers and prompts from parent tenant.
+
+**Settings Object:**
+- `vector_store_type` (string, optional): The type of vector store to use. Options:
+  - `"opensearch"`: Use OpenSearch as the vector store
+  - If not specified, uses the default internal vector store
+
+- `vector_store_config` (object, required if vector_store_type is "opensearch"):
+  - `host` (string): OpenSearch host URL
+  - `port` (number): OpenSearch port number
+  - `region` (string): AWS region for OpenSearch
+  - `index_name` (string): Name of the OpenSearch index to use
+
+- `anthropic_api_key` (string, required): Your Anthropic API key for Claude 3.5 Sonnet model access
+- `openai_api_key` (string, required): Your OpenAI API key for text embeddings
+- `google_ai_api_key` (string, required): Your Google AI API key for Gemini 1.5 Pro model access
+
+**Concurrency Limits Object (optional):**
+Controls the maximum number of parallel operations per content type. If not specified, uses system defaults.
+- `TEXT` (number): Maximum parallel text operations (default: 10)
+- `IMAGE` (number): Maximum parallel image operations (default: 5)
+- `VIDEO` (number): Maximum parallel video operations (default: 3)
+- `AUDIO` (number): Maximum parallel audio operations (default: 3)
+
+#### Response Fields
+
+- `tenant_id` (string): Unique identifier for the tenant in the format "t-*"
+- `api_key` (string): API key for authenticating tenant-specific requests in the format "sk-tenant-*"
+- `name` (string): The tenant name as provided in the request
+- `description` (string): The tenant description as provided in the request
+- `parent_tenant_id` (string, optional): The ID of the parent tenant if specified
+- `settings` (object): The tenant settings as configured in the request
+- `concurrency_limits` (object): The configured or default concurrency limits
+
+#### Example Response
 ```json
 {
     "tenant_id": "t-123456",
     "api_key": "sk-tenant-abcdef123456",
     "name": "Your Company or Application",
     "description": "Your company or application description",
+    "parent_tenant_id": "t-parent123",
     "settings": {
         "vector_store_type": "opensearch",
         "vector_store_config": {
@@ -196,7 +239,7 @@ Response:
         "IMAGE": 5,
         "VIDEO": 3,
         "AUDIO": 3
-    },
+    }
 }
 ```
 
@@ -208,6 +251,8 @@ GET /tenant/{tenant_id}
 Authorization: Bearer <tenant-api-key>
 ```
 
+Returns the same fields as the tenant creation response.
+
 ### List Tenants
 Requires admin authorization. Contact vinayak.sachdeva@codenation.co.in for admin access.
 
@@ -216,6 +261,8 @@ GET /tenant
 Authorization: Bearer <admin-api-key>
 ```
 
+Returns an array of tenant objects, each containing the same fields as the tenant creation response.
+
 ### Update Tenant
 Requires tenant authorization.
 
@@ -223,7 +270,33 @@ Requires tenant authorization.
 PUT /tenant/{tenant_id}
 Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
+
+{
+    "name": "Updated Name",             // Optional: New tenant name
+    "description": "Updated description", // Optional: New description
+    "settings": {                       // Optional: Updated settings
+        "anthropic_api_key": "new-key",
+        "openai_api_key": "new-key",
+        "google_ai_api_key": "new-key",
+        "vector_store_type": "opensearch",
+        "vector_store_config": {
+            "host": "new-host",
+            "port": 443,
+            "region": "new-region",
+            "index_name": "new-index"
+        }
+    },
+    "concurrency_limits": {            // Optional: Updated limits
+        "TEXT": 20,
+        "IMAGE": 10,
+        "VIDEO": 5,
+        "AUDIO": 5
+    }
+}
 ```
+
+All fields in the update request are optional. Only the fields that need to be updated should be included.
+The response will contain the complete updated tenant object with all fields.
 
 ### Delete Tenant
 Requires tenant authorization.
@@ -232,6 +305,10 @@ Requires tenant authorization.
 DELETE /tenant/{tenant_id}
 Authorization: Bearer <tenant-api-key>
 ```
+
+Returns a 204 No Content response on successful deletion.
+
+**Note**: Deleting a tenant will also delete all associated brands, sources, prompts, workers, and generations. This action cannot be undone.
 
 ## Brand Management
 

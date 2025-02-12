@@ -58,6 +58,14 @@ Multiple storage systems:
 
 ## Multi-tenant Architecture
 
+### Tenant Hierarchy
+
+Tenants can be organized in a hierarchical structure using parent-child relationships. This allows for:
+- Structured organization of brands and content
+- Inheritance of settings and configurations
+- Simplified management of related tenants
+- Flexible organization structure for enterprises
+
 ### Tenant Isolation
 
 Each tenant has:

@@ -366,13 +366,13 @@ The response will include generation id and version id:
     "result": null,
     "worker_id": "your-worker-id",
     "output_type": "your-output-type",
-    "status": "your-status", // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
     "prompt": "your-worker-prompt",
     "source_ids": [],
     "created_at": "2025-02-14T15:49:44.120298+00:00",
     "context": "your-context",
-    "generation_id": "your-generation-id", // generation id
-    "current_version_id": "a0943c12-3198-4c02-b342-b29d3f297c2a", // version id
+    "generation_id": "your-generation-id",               // generation id
+    "current_version_id": "latest-version-id",           // version id
     "updated_at": "2025-02-14T15:49:44.120298+00:00",
     "use_source_context": true,
     "brand_id": "your-brand-id"
@@ -392,7 +392,7 @@ Here is the response for the generation version:
     "feedback": null,
     "previous_version_id": null,
     "version_id": "your-version-id",
-    "status": "PROCESSING", // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "status": "PROCESSING",                               // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
     "generation_id": "your-generation-id",
     "created_at": "2025-02-14T15:49:44.120298+00:00",
     "output_type": "your-output-type"
@@ -414,7 +414,7 @@ Here is the response for the generation:
     "result": null,
     "worker_id": "your-worker-id",
     "output_type": "your-output-type",
-    "status": "PROCESSING", // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
     "prompt": "your-worker-prompt",
     "source_ids": [],
     "created_at": "2025-02-14T15:49:44.120298+00:00",

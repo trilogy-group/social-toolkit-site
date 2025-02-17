@@ -27,8 +27,8 @@ The processing system handles:
 
 2. **Content Generation**:
    - Text generation
-   - Image generation (coming soon)
-   - Video generation (coming soon)
+   - Image generation
+   - Video generation
    - Audio generation (coming soon)
 
 ### Queue System

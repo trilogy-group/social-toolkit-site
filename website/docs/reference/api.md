@@ -624,15 +624,90 @@ Content-Type: application/json
     "context": "Optional context for generation",
     "source_ids": ["src-123", "src-456"],  // Optional: Array of source IDs to include in generation context
     "use_source_context": true             // Optional: Whether to use source analysis (default: true)
+    "metadata": {                          // Optional: Metadata about the generation, this can be used to store any information you want to store along with the generation
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
+}
+```
+
+Response for create generation request:
+```json
+{
+    "tenant_id": "your-tenant-id",
+    "result": null,
+    "worker_id": "your-worker-id",
+    "output_type": "your-output-type",
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "prompt": "your-worker-prompt",
+    "source_ids": [],
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "context": "your-context",
+    "generation_id": "your-generation-id",               // generation id
+    "current_version_id": "latest-version-id",           // version id
+    "updated_at": "2025-02-14T15:49:44.120298+00:00",
+    "use_source_context": true,
+    "brand_id": "your-brand-id",
+    "metadata": {                                        // if included in the create generation request, else null
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
 }
 ```
 
 ### Get Generation
 Requires tenant authorization.
+Note that this will fetch the latest version of the generation.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}
 Authorization: Bearer <tenant-api-key>
+```
+
+Response for get generation request:
+```json
+{
+    "tenant_id": "your-tenant-id",
+    "result": null, 
+    "worker_id": "your-worker-id",
+    "output_type": "your-output-type",
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "prompt": "your-worker-prompt",
+    "source_ids": [],
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "context": "your-context",
+    "generation_id": "your-generation-id",               // generation id
+    "current_version_id": "latest-version-id",           // version id
+    "updated_at": "2025-02-14T15:49:44.120298+00:00",
+    "use_source_context": true,
+    "brand_id": "your-brand-id"
+    "metadata": {                                        // if included in the create generation request, else null
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
+}
+```
+
+### Get Generation Version
+You can fetch the generation version, using generation id and current version id from the response of the create generation request.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version/{version_id}
+Authorization: Bearer <tenant-api-key>
+```
+
+Response for get generation version request:
+```json
+{
+    "result": null,
+    "feedback": null,
+    "previous_version_id": null,
+    "version_id": "your-version-id",
+    "status": "PROCESSING",                               // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "your-output-type"
+}
 ```
 
 ### List Generations
@@ -641,6 +716,41 @@ Requires tenant authorization.
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation
 Authorization: Bearer <tenant-api-key>
+```
+
+### List Generation Versions
+Requires tenant authorization.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version
+Authorization: Bearer <tenant-api-key>
+```
+
+### Submit Feedback for Generation
+Requires tenant authorization.
+
+```http
+POST /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version/{version_id}/feedback
+Authorization: Bearer <tenant-api-key>
+Content-Type: application/json
+
+{
+    "feedback": "Your feedback about the resonse, to improve the next generation version output"
+}
+```
+
+Response for submit feedback for generation request:
+```json
+{
+    "result": null,
+    "feedback": "Your feedback about the resonse",        // Feedback
+    "previous_version_id": "previous-version-id",         // Previous version id
+    "version_id": "your-version-id",                      // New version id
+    "status": "PROCESSING",                               // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",                // generation id
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "your-output-type"
+}
 ```
 
 ## API Configuration

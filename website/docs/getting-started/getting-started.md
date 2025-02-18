@@ -399,7 +399,7 @@ Here is the response for the generation version:
 }
 ```
 
-You can fetch the generation as well, using the generation id but not that this will return the latest version of the generation.
+You can fetch the generation as well, using the generation id but note that this will return the latest version of the generation.
 
 Here is how you can fetch the generation:
 ```http

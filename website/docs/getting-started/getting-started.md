@@ -141,9 +141,17 @@ Content-Type: application/json
 
 ## Step 4: Create Generation Workers
 
-After setting up Brand Compass workers, create workers for content generation. The system supports two types of workers:
+After setting up Brand Compass workers, create workers for content generation. The system supports 5 types of workers:
 
-1. **Text Workers** - Generate text-based content:
+1. **Text Workers** - Generate text-based content
+2. **Image Workers** - Generate image-based content
+3. **React Component Workers** - Generate react component code
+4. **Reel Workers** - Generate short video content
+5. **Multi-Modal Workers** - Generate text and image content (coming soon)
+
+Request body to create a worker:
+
+example 1: **Text Workers** - Generate text-based content
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>
@@ -158,7 +166,7 @@ Content-Type: application/json
 }
 ```
 
-2. **Multi-Modal Workers** - Generate text and image content (coming soon):
+example 2: **Multi-Modal Workers** - Generate text and image content (coming soon)
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>
@@ -171,6 +179,8 @@ Content-Type: application/json
     "prompt": "Create an engaging social media image that reflects our brand style and visual identity."
 }
 ```
+
+Use output_type key to specify the type of worker you want to create, available options are [TEXT, IMAGE, REACT_COMPONENT, REEL, MULTI_MODAL].
 
 ## Step 5: Create Your Brand
 

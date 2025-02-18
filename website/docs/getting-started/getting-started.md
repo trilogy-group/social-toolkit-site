@@ -151,7 +151,7 @@ After setting up Brand Compass workers, create workers for content generation. T
 
 Request body to create a worker:
 
-example 1: **Text Workers** - Generate text-based content
+Example 1: **Text Workers** - Generate text-based content
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>
@@ -166,7 +166,7 @@ Content-Type: application/json
 }
 ```
 
-example 2: **Multi-Modal Workers** - Generate text and image content (coming soon)
+Example 2: **Multi-Modal Workers** - Generate text and image content (coming soon)
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>

@@ -624,7 +624,7 @@ Content-Type: application/json
     "context": "Optional context for generation",
     "source_ids": ["src-123", "src-456"],  // Optional: Array of source IDs to include in generation context
     "use_source_context": true             // Optional: Whether to use source analysis (default: true)
-    "metadata": {                          // Optional: Metadata about the generation, this can be used to store any information you want to store along with the generation
+    "metadata": {                          // Optional: Metadata about the generation; can be used to store additional information.
         "key_1": "value_1",
         "key_2": "value_2"
     }
@@ -753,6 +753,14 @@ VIDEO:
     "reel_url": "https://your-reel-url.com/reel.mp4",
     "shotstack_json": {...}
 }            
+```
+
+In case of error, the result will be:
+```json
+"result": {
+    "status": "error",
+    "error": "error-message"
+}
 ```
 
 ### List Generations

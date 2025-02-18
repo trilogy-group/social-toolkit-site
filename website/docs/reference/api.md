@@ -837,7 +837,18 @@ Response:
 ```json
 {
     "status": "PROCESSING",
-    "triggered_at": "2024-01-08T12:00:00Z"
+    "triggered_at": "2025-02-18T10:22:27.415498+00:00",
+    "generation_version_tuples": [
+        {
+            "generation_id": "your-generation-id-1",
+            "version_id": "your-version-id-1"
+        },
+        {
+            "generation_id": "your-generation-id-2",
+            "version_id": "your-version-id-2"
+        }
+        // ... more generation version tuples
+    ]
 }
 ```
 
@@ -856,23 +867,33 @@ Response:
     "status": "PROCESSING",
     "generations": [
         {
-            "worker_id": "worker-tone-analysis-123",
             "status": "COMPLETED",
+            "generation_id": "your-generation-id-1",
+            "version_id": "your-version-id-1",
             "result": {
-                "tone_characteristics": [...],
-                "voice_patterns": [...],
-                // ... analysis results
-            }
+                "status": "success",                            // success, error
+                "content": "your-brand-compass-content"
+            },
+            "created_at": "2025-02-18T10:22:31.744188+00:00",
+            "feedback": null,
+            "previous_version_id": null,
+            "output_type": "TEXT"
         },
         {
-            "worker_id": "worker-style-patterns-456",
-            "status": "PROCESSING"
+            "status": "PROCESSING",
+            "generation_id": "your-generation-id-2",
+            "version_id": "your-version-id-2",
+            "result": null,
+            "created_at": "2025-02-18T10:22:31.744188+00:00",
+            "feedback": null,
+            "previous_version_id": null,
+            "output_type": "TEXT"
         }
         // ... other worker generations
     ],
     "triggered_at": "2024-01-08T12:00:00Z",
     "completed_at": null,
-    "progress": {
+    "progress": {                                               // only returned if the brand compass is under PROCESSING state
         "total_workers": 5,
         "completed_workers": 2,
         "percent_complete": 40

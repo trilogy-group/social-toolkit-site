@@ -689,7 +689,7 @@ Response for get generation request:
 ```
 
 ### Get Generation Version
-You can fetch the generation version, using generation id and current version id from the response of the create generation request.
+You can fetch the generation version, using generation id and version id from the response of the create generation request.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version/{version_id}
@@ -708,6 +708,51 @@ Response for get generation version request:
     "created_at": "2025-02-14T15:49:44.120298+00:00",
     "output_type": "your-output-type"
 }
+```
+
+Response after the generation is completed:
+```json
+{
+    "result": {
+        "status": "success",                              // success, error
+        "content": "your-generation-result"
+    },
+    "feedback": null,
+    "previous_version_id": null,                          // previous version id, available if generated using feedback over previous version
+    "version_id": "your-version-id",
+    "status": "COMPLETED",                                // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "TEXT"                                 // TEXT, IMAGE, REACT_COMPONENT, REEL
+}
+```
+
+#### Result Schema across different output types
+
+TEXT | REACT_COMPONENT:
+```json
+result: {
+    "status": "success",
+    "content": "your-generation-result"
+}
+```
+
+IMAGE:
+```json
+"result": {
+    "status": "success",
+    "image_url": "https://your-image-url.com/image.png",
+    "image_description": "image-description"
+}
+```
+
+VIDEO:
+```json
+"result": {
+    "status": "success",
+    "reel_url": "https://your-reel-url.com/reel.mp4",
+    "shotstack_json": {...}
+}            
 ```
 
 ### List Generations

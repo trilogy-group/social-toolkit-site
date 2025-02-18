@@ -141,9 +141,17 @@ Content-Type: application/json
 
 ## Step 4: Create Generation Workers
 
-After setting up Brand Compass workers, create workers for content generation. The system supports two types of workers:
+After setting up Brand Compass workers, create workers for content generation. The system supports 5 types of workers:
 
-1. **Text Workers** - Generate text-based content:
+1. **Text Workers** - Generate text-based content
+2. **Image Workers** - Generate image-based content
+3. **React Component Workers** - Generate react component code
+4. **Reel Workers** - Generate short video content
+5. **Multi-Modal Workers** - Generate text and image content (coming soon)
+
+Request body to create a worker:
+
+Example 1: **Text Workers** - Generate text-based content
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>
@@ -158,7 +166,7 @@ Content-Type: application/json
 }
 ```
 
-2. **Multi-Modal Workers** - Generate text and image content (coming soon):
+Example 2: **Multi-Modal Workers** - Generate text and image content (coming soon)
 ```http
 POST https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/worker
 Authorization: Bearer <your-tenant-api-key>
@@ -171,6 +179,8 @@ Content-Type: application/json
     "prompt": "Create an engaging social media image that reflects our brand style and visual identity."
 }
 ```
+
+Use output_type key to specify the type of worker you want to create, available options are [TEXT, IMAGE, REACT_COMPONENT, REEL, MULTI_MODAL].
 
 ## Step 5: Create Your Brand
 
@@ -297,16 +307,27 @@ The response will show the analysis progress:
     "status": "PROCESSING",
     "generations": [
         {
-            "worker_id": "worker-tone-analysis-123",
+            "generation_id": "generation-id-123",
+            "version_id": "version-id-123",
+            "previous_version_id": null,
+            "output_type": "the-output-type",
             "status": "COMPLETED",
             "result": {
-                "tone_characteristics": [...],
-                "voice_patterns": [...],
-            }
+                "status": "success",
+                "content": "...",
+            },
+            "created_at": "2025-02-14T15:49:44.120298+00:00",
+            "feedback": null
         },
         {
-            "worker_id": "worker-style-patterns-456",
-            "status": "PROCESSING"
+            "generation_id": "generation-id-456",
+            "version_id": "version-id-456",
+            "previous_version_id": null,
+            "output_type": "TEXT",
+            "status": "PROCESSING",
+            "result": null,
+            "feedback": null,
+            "created_at": "2025-02-14T15:49:44.120298+00:00",
         }
     ],
     "triggered_at": "2024-01-08T12:00:00Z",
@@ -347,7 +368,71 @@ The generation request accepts these parameters:
 - `use_source_context`: Optional boolean (default: true) that determines whether to use source analysis for generation
 
 2. Check generation status:
+
+The response will include generation id and version id:
+```json
+{
+    "tenant_id": "your-tenant-id",
+    "result": null,
+    "worker_id": "your-worker-id",
+    "output_type": "your-output-type",
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "prompt": "your-worker-prompt",
+    "source_ids": [],
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "context": "your-context",
+    "generation_id": "your-generation-id",               // generation id
+    "current_version_id": "latest-version-id",           // version id
+    "updated_at": "2025-02-14T15:49:44.120298+00:00",
+    "use_source_context": true,
+    "brand_id": "your-brand-id"
+}
+```
+
+Fetch the generation version using the generation id and version id:
+```http
+GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version/{version_id}
+Authorization: Bearer <your-tenant-api-key>
+```
+
+Here is the response for the generation version:
+```json
+{
+    "result": null,
+    "feedback": null,
+    "previous_version_id": null,
+    "version_id": "your-version-id",
+    "status": "PROCESSING",                               // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "your-output-type"
+}
+```
+
+You can fetch the generation as well, using the generation id but note that this will return the latest version of the generation.
+
+Here is how you can fetch the generation:
 ```http
 GET https://social-toolkit.ti.trilogy.com/tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}
 Authorization: Bearer <your-tenant-api-key>
+```
+
+Here is the response for the generation:
+```json
+{
+    "tenant_id": "your-tenant-id",
+    "result": null,
+    "worker_id": "your-worker-id",
+    "output_type": "your-output-type",
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "prompt": "your-worker-prompt",
+    "source_ids": [],
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "context": "your-context",
+    "generation_id": "your-generation-id",
+    "updated_at": "2025-02-14T15:49:44.120298+00:00",
+    "use_source_context": true,
+    "current_version_id": "your-version-id",
+    "brand_id": "your-brand-id"
+}
 ```

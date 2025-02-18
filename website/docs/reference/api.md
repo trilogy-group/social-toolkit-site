@@ -624,15 +624,143 @@ Content-Type: application/json
     "context": "Optional context for generation",
     "source_ids": ["src-123", "src-456"],  // Optional: Array of source IDs to include in generation context
     "use_source_context": true             // Optional: Whether to use source analysis (default: true)
+    "metadata": {                          // Optional: Metadata about the generation; can be used to store additional information.
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
+}
+```
+
+Response for create generation request:
+```json
+{
+    "tenant_id": "your-tenant-id",
+    "result": null,
+    "worker_id": "your-worker-id",
+    "output_type": "your-output-type",
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "prompt": "your-worker-prompt",
+    "source_ids": [],
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "context": "your-context",
+    "generation_id": "your-generation-id",               // generation id
+    "current_version_id": "latest-version-id",           // version id
+    "updated_at": "2025-02-14T15:49:44.120298+00:00",
+    "use_source_context": true,
+    "brand_id": "your-brand-id",
+    "metadata": {                                        // if included in the create generation request, else null
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
 }
 ```
 
 ### Get Generation
 Requires tenant authorization.
+Note that this will fetch the latest version of the generation.
 
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}
 Authorization: Bearer <tenant-api-key>
+```
+
+Response for get generation request:
+```json
+{
+    "tenant_id": "your-tenant-id",
+    "result": null, 
+    "worker_id": "your-worker-id",
+    "output_type": "your-output-type",
+    "status": "PROCESSING",                              // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "prompt": "your-worker-prompt",
+    "source_ids": [],
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "context": "your-context",
+    "generation_id": "your-generation-id",               // generation id
+    "current_version_id": "latest-version-id",           // version id
+    "updated_at": "2025-02-14T15:49:44.120298+00:00",
+    "use_source_context": true,
+    "brand_id": "your-brand-id"
+    "metadata": {                                        // if included in the create generation request, else null
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
+}
+```
+
+### Get Generation Version
+You can fetch the generation version, using generation id and version id from the response of the create generation request.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version/{version_id}
+Authorization: Bearer <tenant-api-key>
+```
+
+Response for get generation version request:
+```json
+{
+    "result": null,
+    "feedback": null,
+    "previous_version_id": null,
+    "version_id": "your-version-id",
+    "status": "PROCESSING",                               // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "your-output-type"
+}
+```
+
+Response after the generation is completed:
+```json
+{
+    "result": {
+        "status": "success",                              // success, error
+        "content": "your-generation-result"
+    },
+    "feedback": null,
+    "previous_version_id": null,                          // previous version id, available if generated using feedback over previous version
+    "version_id": "your-version-id",
+    "status": "COMPLETED",                                // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "TEXT"                                 // TEXT, IMAGE, REACT_COMPONENT, REEL
+}
+```
+
+#### Result Schema across different output types
+
+TEXT | REACT_COMPONENT:
+```json
+result: {
+    "status": "success",
+    "content": "your-generation-result"
+}
+```
+
+IMAGE:
+```json
+"result": {
+    "status": "success",
+    "image_url": "https://your-image-url.com/image.png",
+    "image_description": "image-description"
+}
+```
+
+VIDEO:
+```json
+"result": {
+    "status": "success",
+    "reel_url": "https://your-reel-url.com/reel.mp4",
+    "shotstack_json": {...}
+}            
+```
+
+In case of error, the result will be:
+```json
+"result": {
+    "status": "error",
+    "error": "error-message"
+}
 ```
 
 ### List Generations
@@ -641,6 +769,41 @@ Requires tenant authorization.
 ```http
 GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation
 Authorization: Bearer <tenant-api-key>
+```
+
+### List Generation Versions
+Requires tenant authorization.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version
+Authorization: Bearer <tenant-api-key>
+```
+
+### Submit Feedback for Generation
+Requires tenant authorization.
+
+```http
+POST /tenant/{tenant_id}/brand/{brand_id}/worker/{worker_id}/generation/{generation_id}/version/{version_id}/feedback
+Authorization: Bearer <tenant-api-key>
+Content-Type: application/json
+
+{
+    "feedback": "Your feedback about the resonse, to improve the next generation version output"
+}
+```
+
+Response for submit feedback for generation request:
+```json
+{
+    "result": null,
+    "feedback": "Your feedback about the resonse",        // Feedback
+    "previous_version_id": "previous-version-id",         // Previous version id
+    "version_id": "your-version-id",                      // New version id
+    "status": "PROCESSING",                               // NOT_STARTED, QUEUED, PROCESSING, COMPLETED, FAILED
+    "generation_id": "your-generation-id",                // generation id
+    "created_at": "2025-02-14T15:49:44.120298+00:00",
+    "output_type": "your-output-type"
+}
 ```
 
 ## API Configuration
@@ -727,7 +890,18 @@ Response:
 ```json
 {
     "status": "PROCESSING",
-    "triggered_at": "2024-01-08T12:00:00Z"
+    "triggered_at": "2025-02-18T10:22:27.415498+00:00",
+    "generation_version_tuples": [
+        {
+            "generation_id": "your-generation-id-1",
+            "version_id": "your-version-id-1"
+        },
+        {
+            "generation_id": "your-generation-id-2",
+            "version_id": "your-version-id-2"
+        }
+        // ... more generation version tuples
+    ]
 }
 ```
 
@@ -746,23 +920,33 @@ Response:
     "status": "PROCESSING",
     "generations": [
         {
-            "worker_id": "worker-tone-analysis-123",
             "status": "COMPLETED",
+            "generation_id": "your-generation-id-1",
+            "version_id": "your-version-id-1",
             "result": {
-                "tone_characteristics": [...],
-                "voice_patterns": [...],
-                // ... analysis results
-            }
+                "status": "success",                            // success, error
+                "content": "your-brand-compass-content"
+            },
+            "created_at": "2025-02-18T10:22:31.744188+00:00",
+            "feedback": null,
+            "previous_version_id": null,
+            "output_type": "TEXT"
         },
         {
-            "worker_id": "worker-style-patterns-456",
-            "status": "PROCESSING"
+            "status": "PROCESSING",
+            "generation_id": "your-generation-id-2",
+            "version_id": "your-version-id-2",
+            "result": null,
+            "created_at": "2025-02-18T10:22:31.744188+00:00",
+            "feedback": null,
+            "previous_version_id": null,
+            "output_type": "TEXT"
         }
         // ... other worker generations
     ],
     "triggered_at": "2024-01-08T12:00:00Z",
     "completed_at": null,
-    "progress": {
+    "progress": {                                               // only returned if the brand compass is under PROCESSING state
         "total_workers": 5,
         "completed_workers": 2,
         "percent_complete": 40

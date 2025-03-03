@@ -622,6 +622,7 @@ Content-Type: application/json
 
 {
     "context": "Optional context for generation",
+    "generate_multiple": false,            // Optional: Whether to generate multiple outputs, or a single output (default: false). Note that this only works with TEXT workers.
     "source_ids": ["src-123", "src-456"],  // Optional: Array of source IDs to include in generation context
     "use_source_context": true             // Optional: Whether to use source analysis (default: true)
     "metadata": {                          // Optional: Metadata about the generation; can be used to store additional information.
@@ -715,7 +716,7 @@ Response after the generation is completed:
 {
     "result": {
         "status": "success",                              // success, error
-        "content": "your-generation-result"
+        "content": "your-generation-result"               // if generate_multiple is true, the output is an array of strings; otherwise, it is a single string.
     },
     "feedback": null,
     "previous_version_id": null,                          // previous version id, available if generated using feedback over previous version
@@ -788,7 +789,9 @@ Authorization: Bearer <tenant-api-key>
 Content-Type: application/json
 
 {
-    "feedback": "Your feedback about the resonse, to improve the next generation version output"
+    "feedback": "Your feedback regarding the response, which helps improve future outputs.",
+    "output_index": 0                                       // Optional: This 0-based index specifies which output to apply the feedback to when multiple outputs are generated. 
+                                                            // If omitted, the feedback will apply to all outputs in case of multiple outputs.
 }
 ```
 

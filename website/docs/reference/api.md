@@ -957,3 +957,113 @@ Response:
 }
 ```
 
+## Conversation API
+
+The Conversation API allows you to manage chat conversations with the Brand. Each conversation maintains its own context and history.
+
+### Create Conversation
+Requires tenant authorization.
+
+```http
+POST /tenant/{tenant_id}/brand/{brand_id}/conversation
+Authorization: Bearer <tenant-api-key>
+Content-Type: application/json
+
+{
+    "name": "My Chat",                     // Optional: Name for the conversation
+    "metadata": {                          // Optional: Metadata about the conversation; can be used to store additional information.
+        "key_1": "value_1",
+        "key_2": "value_2"
+    }
+}
+```
+
+Response (201 Created):
+```json
+{
+    "metadata": {                           // if was included in the create conversation request, else null
+        "key_1": "value_1",
+        "key_2": "value_2"
+    },
+    "name": "Your chat name",               // name of the conversation, default value: New Chat [Timestamp] e.g. New Chat 2025-03-14 21:39:26
+    "created_at": "2025-03-14T21:39:26.400407+00:00",
+    "current_leaf_message_id": null,
+    "chat_messages": [],
+    "conversation_id": "your-conversation-id",
+    "tenant_id": "your-tenant-id",
+    "updated_at": "2025-03-14T21:39:26.400409+00:00",
+    "brand_id": "your-brand-id",
+    "token": "your-conversation-token"      // required for authentication of the conversation, valid for 30 days
+}
+```
+
+### Get Conversation
+Requires tenant authorization. Returns the full conversation details including metadata and messages.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/conversation/{conversation_id}
+Authorization: Bearer <tenant-api-key>
+```
+
+### List Conversations
+Requires tenant authorization. Returns a list of conversations for the tenant and brand.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/conversation
+Authorization: Bearer <tenant-api-key>
+```
+
+**Note:** List conversations response does not include chat messages or tokens.
+
+### WebSocket Communication
+
+#### Establishing Connection
+
+1. Connect to the WebSocket endpoint:
+```
+wss://fksqfi5loe.execute-api.us-east-1.amazonaws.com/api/
+```
+
+2. Add the conversation token to the Authorization header:
+```
+Authorization: your-conversation-token
+```
+
+#### Sending Messages
+
+To send a message, send a JSON payload with the following format:
+
+```json
+{
+    "message": "Your message text",
+    "conversation_id": "your-conversation-id",
+    "tenant_id": "your-tenant-id",
+    "brand_id": "your-brand-id"
+}
+```
+
+#### Receiving Messages
+
+The WebSocket connection will stream responses from the Brand as they are generated. Response messages have the following format:
+
+```json
+{
+    "message": "response-from-assistant",    // The actual message content
+    "status": "success",                     // success or error
+    "source": "assistant",                   // Indicates message is from the assistant
+    "type": "chat_stream"                    // Message type identifier
+}
+```
+
+#### Connection Lifecycle
+
+The WebSocket connection:
+- Remains active while the conversation is ongoing
+- Streams responses in real-time as they are generated
+- Automatically closes after inactivity
+- Can be re-established using the same conversation token (valid for 30 days)
+
+
+
+
+

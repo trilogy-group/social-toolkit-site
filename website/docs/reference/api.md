@@ -400,7 +400,7 @@ Response:
     }
 }
 ```
-
+<!-- 
 ### Download Brand Compass PDF
 Requires tenant authorization.
 
@@ -420,7 +420,7 @@ Content-Disposition: attachment; filename="brand_compass_report_<brand_name>_<da
 ```
 
 Notes:
-- The compass generation must be complete before downloading. If still processing, an error will be returned.
+- The compass generation must be complete before downloading. If still processing, an error will be returned. -->
 
 ## Source Management
 

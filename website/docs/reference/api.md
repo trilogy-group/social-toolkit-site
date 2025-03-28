@@ -401,6 +401,27 @@ Response:
 }
 ```
 
+### Download Brand Compass PDF
+Requires tenant authorization.
+
+```http
+GET /tenant/{tenant_id}/brand/{brand_id}/compass/download
+Authorization: Bearer <tenant-api-key>
+```
+
+Query parameters:
+- `format` (string, optional): The format of the download.  Default pdf
+Currently only supports "pdf"
+
+Response headers:
+```
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="brand_compass_report_<brand_name>_<date>.pdf"
+```
+
+Notes:
+- The compass generation must be complete before downloading. If still processing, an error will be returned.
+
 ## Source Management
 
 ### Add Source
@@ -763,7 +784,6 @@ In case of error, the result will be:
     "error": "error-message"
 }
 ```
-
 ### List Generations
 Requires tenant authorization.
 
@@ -1062,6 +1082,7 @@ The WebSocket connection:
 - Streams responses in real-time as they are generated
 - Automatically closes after inactivity
 - Can be re-established using the same conversation token (valid for 30 days)
+
 
 
 

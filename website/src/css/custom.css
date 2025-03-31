@@ -28,3 +28,25 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Version badge in the sidebar */
+.sidebar-version {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  font-size: 0.85rem;
+  font-weight: 900;
+  opacity: 0.8;
+  color: var(--ifm-color-emphasis-900);
+  font-family: var(--ifm-font-family-monospace);
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.sidebar-version:hover {
+  opacity: 1;
+}

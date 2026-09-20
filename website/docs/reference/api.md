@@ -436,6 +436,7 @@ Content-Type: multipart/form-data
 name: "Sample Content"
 description: "Content description"
 source_type: "SAMPLE" # SAMPLE, GUIDELINES, or KNOWLEDGE
+model_id: "gemini-3-flash-preview" # Optional. SAMPLE only. See "Selecting the Analysis Model" below.
 
 # Content can be provided in one of these three ways:
 1. file: <file upload>
@@ -465,6 +466,36 @@ Response (201 Created):
     "created_at": "2024-01-08T12:00:00Z",
     "updated_at": "2024-01-08T12:00:00Z",
     "location": "s3://bucket-name/sources/tenant=123/brand=456/uuid_filename"
+}
+```
+
+### Selecting the Analysis Model
+
+`model_id` is an optional form field that chooses which model runs the analysis. Omit it and the default model for that content type is used, which is exactly what existing integrations already get.
+
+It applies to `SAMPLE` sources only. `KNOWLEDGE` and `GUIDELINES` sources never invoke a model, so sending `model_id` with them is rejected.
+
+| Content type | Default (when omitted) | Allowed values |
+|---|---|---|
+| VIDEO | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview` |
+| IMAGE | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview` |
+| AUDIO | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview` |
+| TEXT | `claude-sonnet-4-6` | `claude-sonnet-4-6`, `gpt-4o`, `gpt-5.2` |
+
+Important notes:
+- Video, image and audio analysis runs through the Gemini Files API, so only Gemini models are accepted. GPT and Claude cannot analyse a media file.
+- Videos longer than 45 minutes are split into segments. The selected Gemini model analyses every segment, and the final merge step runs on Claude.
+- Completed analysis results report `model_id` (what you requested) and `model_used` (what actually ran, after any gateway mapping). For long videos they also report `merge_model_used`.
+
+An unsupported value is rejected with 400 before the content is stored or queued, and the response lists the valid options:
+
+```json
+{
+    "error": "Unsupported model_id for VIDEO",
+    "model_id": "gpt-4o",
+    "content_type": "VIDEO",
+    "available_models": ["gemini-3.1-pro-preview", "gemini-3-flash-preview"],
+    "default_model": "gemini-3.1-pro-preview"
 }
 ```
 
@@ -502,7 +533,17 @@ Requires tenant authorization.
 ```http
 POST /tenant/{tenant_id}/brand/{brand_id}/source/{source_id}/reprocess
 Authorization: Bearer <tenant-api-key>
+Content-Type: application/json
+
+{
+    "model_id": "gemini-3-flash-preview"  // Optional
+}
 ```
+
+The body is optional. `model_id` follows the same rules as "Selecting the Analysis Model":
+- Send a `model_id` to override the model for this run and for later runs of this source.
+- Omit the body and the previously stored `model_id` is reused.
+- If none was ever set, the default for the content type is used.
 
 ## Prompt Management
 

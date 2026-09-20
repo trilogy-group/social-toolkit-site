@@ -477,10 +477,10 @@ It applies to `SAMPLE` sources only. `KNOWLEDGE` and `GUIDELINES` sources never 
 
 | Content type | Default (when omitted) | Allowed values |
 |---|---|---|
-| VIDEO | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview` |
-| IMAGE | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview` |
-| AUDIO | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview` |
-| TEXT | `claude-sonnet-4-6` | `claude-sonnet-4-6`, `gpt-4o`, `gpt-5.2` |
+| VIDEO, IMAGE, AUDIO | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview`, `gemini-3-flash-preview`, `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite` |
+| TEXT | `claude-sonnet-4-6` | `claude-sonnet-4-6`, `claude-sonnet-5`, `claude-opus-5`, `gpt-4o`, `gpt-5.2`, `gpt-5.4`, `gpt-5.5`, `gpt-5.6-sol` |
+
+There is no Gemini Pro tier above 3.1, so `gemini-3.1-pro-preview` remains the quality default and everything newer is a flash tier, meaning faster and cheaper. Every media model listed was verified end to end against a real video.
 
 Important notes:
 - Video, image and audio analysis runs through the Gemini Files API, so only Gemini models are accepted. GPT and Claude cannot analyse a media file.
